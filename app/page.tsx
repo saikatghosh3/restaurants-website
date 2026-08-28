@@ -133,13 +133,19 @@ export default function Page() {
         </div>
       </section>
 
-      {/* ── Ribbon ── */}
-      <section className="ribbon">
-        <div className="shell ribbon-inner">
-          <span>Made for sharing</span><i>✦</i>
-          <span>House spices</span><i>✦</i>
-          <span>Dhaka, Bangladesh</span><i>✦</i>
-          <span>Dine in · Take out · Catering</span>
+      {/* ── Ribbon ticker ── */}
+      <section className="ribbon" aria-label="Zilian highlights">
+        <div className="shell">
+          <div className="ribbon-track">
+            {[0, 1].map((dup) => (
+              <div className="ribbon-set" key={dup} aria-hidden={dup === 1}>
+                <span>Made for sharing</span><i>✦</i>
+                <span>House spices</span><i>✦</i>
+                <span>Dhaka, Bangladesh</span><i>✦</i>
+                <span>Dine in · Take out · Catering</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

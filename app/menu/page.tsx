@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Image from 'next/image'
 import { allTags, categories, dishes, PRICE_MAX, PRICE_MIN, type Dish } from '@/lib/menu'
 import { loadWishlist, saveWishlist } from '@/lib/wishlist'
@@ -58,6 +58,8 @@ export default function MenuPage() {
   const [cartOpen, setCartOpen] = useState(false)
   const [ordered, setOrdered] = useState(false)
   const [checkout, setCheckout] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [customer, setCustomer] = useState({
     name: '',
     phone: '',
@@ -65,6 +67,15 @@ export default function MenuPage() {
     method: 'Cash on Delivery',
     note: '',
   })
+
+  useEffect(() => {
+    if (!toast) return
+    if (toastTimer.current) clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setToast(null), 2600)
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current)
+    }
+  }, [toast])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -109,6 +120,7 @@ export default function MenuPage() {
         : [...items, { dish: selected, option, quantity: 1 }]
     })
     setSelected(null)
+    setToast(`${selected.name} added to your order`)
   }
 
   const changeQty = (i: number, d: number) =>
@@ -206,7 +218,7 @@ export default function MenuPage() {
               </button>
             </div>
             <div className="sidebar-blocks">
-              <div className="sidebar-block">
+              <div className="sidebar-block cat-block">
                 <h4>Categories</h4>
                 <ul className="cat-list">
                   {categories.map((c) => (
@@ -312,6 +324,21 @@ export default function MenuPage() {
                 ))}
               </select>
             </div>
+          </div>
+
+          <div className="cat-slider" role="tablist" aria-label="Categories">
+            {categories.map((c) => (
+              <button
+                key={c}
+                role="tab"
+                aria-selected={category === c}
+                className={`cat-pill ${category === c ? 'active' : ''}`}
+                onClick={() => setCategory(c)}
+              >
+                <span>{c}</span>
+                <b>{countFor(c)}</b>
+              </button>
+            ))}
           </div>
 
           <div className="menu-meta">
@@ -671,6 +698,31 @@ export default function MenuPage() {
               </>
             )}
           </aside>
+        </div>
+      )}
+    {/* ── "Added to order" toast ── */}
+      {toast && (
+        <div className="toast" role="status">
+          <span className="toast-check">✓</span>
+          <span>{toast}</span>
+        </div>
+      )}
+
+      {/* ── Mobile sticky order bar ── */}
+      {totalItems > 0 && (
+        <div className="mobile-order-bar">
+          <button
+            className="mobile-order-bar-main"
+            onClick={() => setCartOpen(true)}
+            aria-label={`Order summary, ${totalItems} item${totalItems === 1 ? '' : 's'}, total ${grandTotal} taka`}
+          >
+            <span className="mob-bar-items">{totalItems} item{totalItems === 1 ? '' : 's'}</span>
+            <strong>৳ {total}</strong>
+            <small className="mob-bar-fee">
+              {deliveryFee === 0 ? 'Free delivery' : `+ ৳ ${deliveryFee} delivery`}
+            </small>
+          </button>
+          <button className="mobile-order-cta" onClick={() => setCartOpen(true)}>View order</button>
         </div>
       )}
     </main>
